@@ -11,5 +11,5 @@ try {
  if($LASTEXITCODE){throw 'CLI engine build failed'}
  Copy-Item target/release/samrewritten.exe "$dist/engine/samrewritten-cli.exe" -Force
 } finally {Pop-Location}
-Copy-Item "$root/LICENSE","$root/README.md" $dist -Force
+Copy-Item "$root/LICENSE","$root/README.md","$root/README.zh-CN.md" $dist -Force
 Write-Output $dist

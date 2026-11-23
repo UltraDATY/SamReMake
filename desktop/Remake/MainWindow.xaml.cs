@@ -103,7 +103,7 @@ namespace Remake {
     DwmSetWindowAttribute(handle,36,ref text,4);
    } catch(DllNotFoundException) {} catch(EntryPointNotFoundException) {}
   }
-  public MainWindow() { Localization.Initialize(); InitializeComponent(); SetupLanguage(); SourceInitialized+=(s,e)=>ApplyTitleColors(); PreviewKeyDown+=(s,e)=>{if(e.Key==Key.F5)Refresh(s,e);}; Closing+=(s,e)=>{if(queueRunning && MessageBox.Show(L("关闭程序会停止后续定时任务。是否关闭？"),L("停止队列"),MessageBoxButton.YesNo)!=MessageBoxResult.Yes)e.Cancel=true; else {queue?.Cancel();readCancellation?.Cancel();}}; }
+  public MainWindow() { Localization.Initialize(); InitializeComponent(); SetupLanguage(); SourceInitialized+=(s,e)=>ApplyTitleColors(); PreviewKeyDown+=(s,e)=>{if(e.Key==Key.F5)Refresh(s,e);if(e.Key==Key.Escape)SettingsPopup.IsOpen=false;}; Closing+=(s,e)=>{if(queueRunning && MessageBox.Show(L("关闭程序会停止后续定时任务。是否关闭？"),L("停止队列"),MessageBoxButton.YesNo)!=MessageBoxResult.Yes)e.Cancel=true; else {queue?.Cancel();readCancellation?.Cancel();}}; }
   async Task Guard(Func<Task> action,bool readOnly=false) {
    if(busy) {
     if(readOnly && readCancellation!=null) {
@@ -159,6 +159,7 @@ namespace Remake {
    queue=new CancellationTokenSource();queueRunning=true;var token=queue.Token;Tabs.SelectedIndex=2;int done=0;try {await Backups.Save(appId,"Before timed unlock");await TimedQueue.Run(rows,TimeSpan.FromSeconds(seconds),async row=>{var result=await Engine.Run("unlock",appId.ToString(),row.Id);if(Engine.Array(result).Any(d=>!Convert.ToBoolean(d["success"])))throw new Exception(L("Steam 拒绝该条目"));done++;Journal("scheduled-unlock",row.Id);QueueLog.AppendText((Localization.Language=="zh-CN" ? $"{DateTime.Now:HH:mm:ss} 已提交：{row.Name}\n" : $"{DateTime.Now:HH:mm:ss} Submitted: {row.Name}\n"));}, (index,row)=>QueueStatus.Text=(Localization.Language=="zh-CN" ? $"{index}/{rows.Length} · 等待 {row.Name}" : $"{index}/{rows.Length} · Waiting for {row.Name}"),token);QueueStatus.Text=(Localization.Language=="zh-CN" ? $"完成 {done}/{rows.Length} · 按 F5 重新读取真实时间" : $"Completed {done}/{rows.Length} · Press F5 to read the timestamps from Steam");}catch(OperationCanceledException){QueueStatus.Text=(Localization.Language=="zh-CN" ? $"已停止 · 完成 {done}/{rows.Length} 项；正在提交的请求可能仍然完成" : $"Stopped · Completed {done}/{rows.Length}; an in-flight request may still finish");}catch(Exception ex){QueueStatus.Text=L("队列停止：")+ex.Message;}finally{queueRunning=false;queue.Dispose();queue=null;}
   }
   void StopSchedule(object s,RoutedEventArgs e)=>queue?.Cancel();
+  void OpenSettings(object sender,RoutedEventArgs e) {SettingsPopup.IsOpen=!SettingsPopup.IsOpen;}
   bool settingLanguage;
   void SetupLanguage() {settingLanguage=true;LanguageSelector.SelectedIndex=Localization.Language=="zh-CN"?1:0;settingLanguage=false;}
   void ChangeLanguage(object sender,SelectionChangedEventArgs e) {

@@ -10,3 +10,9 @@ gschemas.compiled
 !*.gresource.xml
 !sitemap.xml
 assets/icons
+# Windows desktop builds and release artifacts
+**/bin/
+**/obj/
+work-tests/
+dist/
+.release-assets/

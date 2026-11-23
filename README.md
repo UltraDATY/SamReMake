@@ -107,3 +107,9 @@ This remains a development preview. Builds and automated tests cover timestamps,
 Based on [PaulCombal/SamRewritten](https://github.com/PaulCombal/SamRewritten). The original author notices and inherited third-party attribution are retained. See [UPSTREAM.md](UPSTREAM.md) and the [upstream README](docs/UPSTREAM-README.md) for provenance.
 
 The frontend and combined distribution use **GPL-3.0-only**; see [LICENSE](LICENSE). SamReMake is an independent derivative project, not an official upstream release.
+
+## Release downloads
+
+Download a Windows portable ZIP from [GitHub Releases](https://github.com/UltraDATY/SamReMake/releases). Each release includes the complete executable package, its matching source archive, and a SHA-256 checksum. Historical releases are rebuilt from the exact commit stated in their release notes.
+
+Every push to `master` runs the Windows release workflow. After the build and automated tests pass, it publishes a development-preview release with a ZIP asset; documentation updates are included. A failed build or test does not publish a package. The release version is `0.3.<workflow run number>`. A maintainer can also run the workflow manually.

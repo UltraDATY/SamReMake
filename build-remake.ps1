@@ -1,8 +1,14 @@
+param([string]$Version="")
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 $dist=Join-Path $root 'dist/SteamAchievementManager-Remake'
 New-Item -ItemType Directory -Force "$dist/engine" | Out-Null
-& msbuild "$root/desktop/Remake/Remake.csproj" /restore /p:Configuration=Release
+$properties=@('/restore','/p:Configuration=Release')
+if($Version){
+ if($Version -notmatch '^\d+\.\d+\.\d+$'){throw 'Invalid release version'}
+ $properties+=@("/p:Version=$Version","/p:AssemblyVersion=$Version.0","/p:FileVersion=$Version.0")
+}
+& msbuild "$root/desktop/Remake/Remake.csproj" @properties
 if($LASTEXITCODE){throw 'Frontend build failed'}
 Copy-Item "$root/desktop/Remake/bin/Release/net48/*.exe","$root/desktop/Remake/bin/Release/net48/*.config" $dist -Force
 Push-Location $root

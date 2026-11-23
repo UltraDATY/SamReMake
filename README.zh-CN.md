@@ -107,3 +107,9 @@ Steam 没有为这些读取请求提供可靠的完成百分比，所以进度�
 基于 [PaulCombal/SamRewritten](https://github.com/PaulCombal/SamRewritten)，保留原作者声明及继承的第三方署名。来源说明见 [UPSTREAM.md](UPSTREAM.md) 和[上游 README](docs/UPSTREAM-README.md)。
 
 前端与组合发行版本采用 **GPL-3.0-only**，详见 [LICENSE](LICENSE)。SamReMake 是独立衍生项目，不是上游官方发布版本。
+
+## 下载 Release
+
+请从 [GitHub Releases](https://github.com/UltraDATY/SamReMake/releases) 下载 Windows 便携 ZIP。每个版本包含完整程序、对应源码压缩包和 SHA-256 校验文件；补发的历史版本会注明用于重建的准确提交。
+
+以后每次向 `master` 推送更新（包括文档更新），都会运行 Windows 发布流程。构建和自动测试通过后，自动发布包含 ZIP 附件的开发预览版；构建或测试失败则不发布。版本号采用 `0.3.<工作流运行序号>`，也可以手动运行该工作流。

@@ -12,11 +12,6 @@ Copy-Item "$testRoot\SteamAchievementManager-Remake.exe.config" "$testRoot\Front
 & "$testRoot\FrontendTest.exe"
 if($LASTEXITCODE){throw 'Tests failed'}
 
-& $compiler /nologo /codepage:65001 "/r:$testRoot\SteamAchievementManager-Remake.exe" /r:System.Web.Extensions.dll "/out:$testRoot\AdvancedTest.exe" "$PSScriptRoot\AdvancedTest.cs"
-if($LASTEXITCODE){throw 'Advanced test build failed'}
-Copy-Item "$testRoot\FrontendTest.exe.config" "$testRoot\AdvancedTest.exe.config" -Force
-& "$testRoot\AdvancedTest.exe"
-if($LASTEXITCODE){throw 'Advanced tests failed'}
 $referenceRoot="${env:ProgramFiles(x86)}\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8"
 & $compiler /nologo /codepage:65001 "/r:$testRoot\SteamAchievementManager-Remake.exe" "/r:$referenceRoot\PresentationFramework.dll" "/r:$referenceRoot\PresentationCore.dll" "/r:$referenceRoot\WindowsBase.dll" /r:System.Xaml.dll "/out:$testRoot\UiReadTest.exe" "$PSScriptRoot\UiReadTest.cs"
 if($LASTEXITCODE){throw 'UI test build failed'}

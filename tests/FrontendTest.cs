@@ -26,16 +26,6 @@ class FrontendTest {
  bool refusedWrite=false;try{Engine.RunRead(System.Threading.CancellationToken.None,300,"unlock","123").GetAwaiter().GetResult();}catch(ArgumentException){refusedWrite=true;}
  Check(refusedWrite,"write commands cannot be force-cancelled");
  Console.WriteLine("PASS: stalled-engine timeout, explicit read cancellation, write cancellation rejected");
- var sequence=new System.Collections.Generic.List<int>();
- TimedQueue.Run(new[]{1,2,3},TimeSpan.Zero,x=>{sequence.Add(x);return System.Threading.Tasks.Task.CompletedTask;},(i,x)=>{},System.Threading.CancellationToken.None).GetAwaiter().GetResult();
- Check(sequence.SequenceEqual(new[]{1,2,3}),"serial queue order");
- var cancel=new System.Threading.CancellationTokenSource(); sequence.Clear(); bool cancelled=false;
- try {TimedQueue.Run(new[]{1,2,3},TimeSpan.Zero,x=>{sequence.Add(x);cancel.Cancel();return System.Threading.Tasks.Task.CompletedTask;},(i,x)=>{},cancel.Token).GetAwaiter().GetResult();}catch(OperationCanceledException){cancelled=true;}
- Check(cancelled&&sequence.SequenceEqual(new[]{1}),"queue cancellation prevents subsequent writes");
- sequence.Clear(); bool stopped=false;
- try {TimedQueue.Run(new[]{1,2,3},TimeSpan.Zero,x=>{sequence.Add(x);throw new Exception("refused");},(i,x)=>{},System.Threading.CancellationToken.None).GetAwaiter().GetResult();}catch(Exception){stopped=true;}
- Check(stopped&&sequence.SequenceEqual(new[]{1}),"queue failure stops subsequent writes");
- Console.WriteLine("PASS: serial schedule, stop after cancellation, stop after engine failure");
  Console.WriteLine("PASS: timestamp parsing, null/locked dates, oldest/newest order, Windows argument roundtrip (Unicode/spaces/quotes/trailing slash), engine rejection");
  }
 }

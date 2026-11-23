@@ -175,11 +175,8 @@ pub async fn run_timed_unlock(
             // Only `Ok(Ok(true))` is Steam saying it stored the thing.
             match result {
                 Ok(Ok(true)) => {
-                    achievement.set_unlock_time_seconds(
-                        std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .map_or(0, |duration| duration.as_secs()),
-                    );
+                    // Unknown until the next Steam stats refresh; never infer from this clock.
+                    achievement.set_unlock_time_seconds(0);
                     batch.record(vec![Change::Achievement {
                         id: achievement.id(),
                         name: achievement.name(),

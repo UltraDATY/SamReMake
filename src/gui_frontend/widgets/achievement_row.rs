@@ -54,6 +54,38 @@ impl AchievementRow {
     /// changing, so this is called once at row setup and tracks recycling.
     pub fn bind_display(&self, list_item: &ListItem, mode_state: &GUnlockModeState) {
         let imp = self.imp();
+        let time_expr = list_item
+            .property_expression("item")
+            .chain_property::<GAchievementObject>("unlock-time-seconds");
+        let achieved_expr = list_item
+            .property_expression("item")
+            .chain_property::<GAchievementObject>("is-achieved");
+        let closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let seconds = values.get(1).and_then(|v| v.get::<u64>().ok()).unwrap_or(0);
+            let achieved = values
+                .get(2)
+                .and_then(|v| v.get::<bool>().ok())
+                .unwrap_or(false);
+            let text = if !achieved {
+                crate::gui_frontend::i18n::tr("Locked")
+            } else if seconds == 0 {
+                crate::gui_frontend::i18n::tr("Unlock time unknown (refresh to read Steam)")
+            } else {
+                i64::try_from(seconds)
+                    .ok()
+                    .and_then(|s| glib::DateTime::from_unix_local(s).ok())
+                    .and_then(|date| date.format("%Y-%m-%d %H:%M:%S %Z").ok())
+                    .unwrap_or_else(|| {
+                        crate::gui_frontend::i18n::tr("Unlock time unknown (refresh to read Steam)")
+                    })
+            };
+            Some(text.to_value())
+        });
+        ClosureExpression::new::<String>(&[time_expr, achieved_expr], closure).bind(
+            &imp.unlock_time_label,
+            "label",
+            Widget::NONE,
+        );
 
         list_item
             .property_expression("item")
@@ -238,6 +270,7 @@ mod imp {
         pub icon_stack: Stack,
         pub name_label: Label,
         pub description_label: Label,
+        pub unlock_time_label: Label,
         pub progress_bar: CustomProgressBar,
         pub trailing_stack: Stack,
         pub ac_protected_icon: Image,
@@ -311,6 +344,7 @@ mod imp {
                 icon_stack,
                 name_label,
                 description_label,
+                unlock_time_label: Label::builder().halign(Align::Start).build(),
                 progress_bar: CustomProgressBar::new(),
                 trailing_stack: Stack::new(),
                 ac_protected_icon,
@@ -374,6 +408,7 @@ mod imp {
             let label_box = Box::builder().orientation(Orientation::Vertical).build();
             label_box.append(&self.name_label);
             label_box.append(&self.description_label);
+            label_box.append(&self.unlock_time_label);
 
             let achievement_box = Box::builder()
                 .orientation(Orientation::Horizontal)

@@ -1,188 +1,37 @@
-SamRewritten
-===
+# SamReMake
 
-<p align=center>
-    <img src="/assets/icon_256.png" alt="SamRewrittenLogo">
-</p>
-
-<p align=center>
-    <img src="/docs/img/screenshot1.png" alt="SamRewritten screenshot">
-    <em>Adwaita version preview</em>
-</p>
-
-<p align=center>
-    <img src="/docs/img/screenshot2.png" alt="SamRewritten screenshot">
-    <em>GTK version preview</em>
-</p>
-
-<p align="center">A Steam Achievement Manager for Windows and Linux.</p>
-<p align="center">
-    <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">DOWNLOAD</a>
-</p>
-
-<p align="center">
-    <a href="#installation">Installation</a> ·
-    <a href="#features">Features</a> ·
-    <a href="#steam-compatibility">Steam compatibility</a> ·
-    <a href="#cli">CLI</a> ·
-    <a href="#translations">Translations</a>
-</p>
-
-<p align=center>
-    <em>
-        This project and its contributors are not affiliated with Valve Corporation or Microsoft.
-        Steam and Windows are trademarks of their respective owners, Valve Corporation and Microsoft.
-    </em>
-</p>
-
-## Acknowledgments
-
-SamRewritten is heavily inspired by other wonderful projects such
-as [Steam Achievements Manager by Gibbed](https://github.com/gibbed/SteamAchievementManager)
-or [Samira by jsnli](https://github.com/jsnli/Samira).
-Thank you to all the contributors of these amazing projects, and
-to [the legacy version of SamRewritten](https://github.com/PaulCombal/SamRewritten-legacy).
-
-Most importantly, thank you to our awesome users and stargazers for giving us the motivation to keep building.
-
-## What is SamRewritten?
-
-SamRewritten is a tool that allows you to unlock and relock achievements on your Steam account. Additionally, it can edit stats for games and apps that expose them. While achievements carry no financial value, they are widely used for collection progress and "bragging rights"!
-
-## Installation
-
-<details>
-<summary><b>Arch Linux (AUR)</b></summary>
-
-SamRewritten is available on the [AUR](https://aur.archlinux.org/packages/samrewritten-git). Install it with any AUR helper:
-
-```bash
-yay -S samrewritten-git
-# or
-paru -S samrewritten-git
-```
-
-</details>
-
-<details>
-<summary><b>Ubuntu Linux (Snap)</b></summary>
-
-**⚠️ Important:** The Snap version of SamRewritten cannot be used with the Flatpak version of Steam.
-
-SamRewritten is published on the Snap Store and works on Ubuntu and any distribution with `snapd` installed:
-
-```bash
-sudo snap install samrewritten
-```
-
-[![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/samrewritten)
-
-The snap ships three commands: `samrewritten` (GTK), `samrewritten.samrewritten-adw` (libadwaita), and `samrewritten.samrewritten-cli`. The CLI reuses the Steam folder granted by the GUI, so run a GUI command once first.
-
-</details>
-
-<details>
-<summary><b>All Linux distributions (AppImage)</b></summary>
-
-1. Download the latest AppImage from the [Releases page](https://github.com/PaulCombal/SamRewritten/releases).
-2. Make it executable. You can either right-click the file → "Permissions" → check "Allow executing file as program", or run:
-   ```bash
-   chmod +x samrewritten-gtk.AppImage
-   ```
-3. Double-click the file to launch, or run it from a terminal:
-   ```bash
-   ./samrewritten-gtk.AppImage
-   ```
-
-For older Linux distributions, like based on Ubuntu 22.04, use the [v1.2.3-legacy](https://github.com/PaulCombal/SamRewritten/releases/tag/v1.2.3-legacy) AppImage.
-
-If SamRewritten fails to launch, run it from a terminal to see the logs. If you see an error mentioning "FUSE" or "libfuse", install the library:
-
-```bash
-sudo apt install libfuse2   # Ubuntu/Debian
-```
-
-If issues persist, please open an issue including your distribution, version, and the console output.
-
-</details>
-
-<details>
-<summary><b>Windows</b></summary>
-
-The recommended way to run SamRewritten on Windows is via the official installer, available on the [Releases page](https://github.com/PaulCombal/SamRewritten/releases). Once installed, you can find and launch SamRewritten through the Start menu.
-
-A portable ZIP build is also provided on the Releases page if you prefer not to run an installer.
-
-If the installation fails or behaves unexpectedly, please open a GitHub issue with as much detail as possible, including your Windows version.
-
-</details>
+A Windows desktop achievement workspace built on the Steam connection and data layer from [PaulCombal/SamRewritten](https://github.com/PaulCombal/SamRewritten). This is an independent derivative project, not an official upstream release.
 
 ## Features
 
-* Lock and unlock specific achievements with a single click
-* Bulk lock/unlock achievements for all or selected apps
-* Schedule achievement unlocks over a custom period
-* Copy another user's achievement unlock timings and replay them
-* Edit statistics in real-time
-* Per-app or bulk import and export of achievements and stats
-* Idle apps: Appear in-game until you toggle it off
-* Optionally manage apps without appearing in-game to your friends
-* Advanced stats: library totals, unlock activity heatmap, average completion plotted over time, and a review of activity that look irregular
-* An optional local history of every change SamRewritten makes, with one-click undo (off by default)
-* A light and dark theme
+- English by default. Change to Simplified Chinese in **Settings → Language**; the choice is saved locally.
+- Library search, AppID entry, achievement search and state filters.
+- Oldest/newest Steam unlock-time sorting. Unknown timestamps stay unknown and sort last. Local time is displayed.
+- Achievement changes, integer/float statistic editing, JSON import/export and cancellable schedules.
+- Integrated advanced workspace: friend timelines, relative-time replay, multi-game export/import/reset/unlock, idling, and snapshot history with restoration.
+- Pre-write snapshots. A failed snapshot blocks the write. Restoration can restore states and statistics, but cannot recreate historical unlock timestamps.
+- Read activity indicator, elapsed time, cancellation and bounded read timeouts. Writes are not force-cancelled.
 
-## Translations
+The advanced workspace belongs to this application. It does not launch the SamRewritten graphical program. A bundled headless CLI engine handles Steam communication in the background.
 
-SamRewritten is translated by its community on
-[Weblate](https://hosted.weblate.org/engage/samrewritten/), and **we'd love your
-help** to support more languages. You don't need to be a programmer or a GitHub
-user: translate in your browser, and your work reaches us on its own.
+## Usage
 
-<a href="https://hosted.weblate.org/engage/samrewritten/">
-    <img src="https://hosted.weblate.org/widget/samrewritten/samrewritten/multi-auto.svg" alt="Translation status per language">
-</a>
+Start Steam and sign in. Run `SteamAchievementManager-Remake.exe` from the complete portable folder. Ordinary connections may show you as in-game. Choose a game, then select achievements with Ctrl/Shift. Every manual write is previewed before submission.
 
-See [`po/README.md`](po/README.md) for a short, step-by-step guide, without a Weblate account.
+Open **Advanced workspace** for friend replay, multi-game operations, idling and snapshot restoration. Friend timelines require access to the source user's achievement data. Unknown source timestamps and achievements you already unlocked are excluded. Replay preserves relative intervals scaled to your chosen duration; Steam records the actual new unlock times.
 
-## Steam compatibility
+Schedules run only while the app remains open. Closing the advanced workspace stops its replay and gracefully requests idle shutdown. If a write is already in flight, stopping the plan does not undo that write. History, snapshots and language preferences are stored under `%LOCALAPPDATA%/SteamAchievementManager-Remake`.
 
-On Linux, SamRewritten supports all of these Steam installation types:
+## Build
 
-✅ Snap installations of Steam <br>
-✅ Flatpak installations of Steam <br>
-✅ Ubuntu/Debian multiarch installations with apt <br>
-✅ Ubuntu/Debian installations with the .deb file from the official Steam website <br>
-✅ Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
+Requirements: Windows, Visual Studio with .NET desktop development and .NET Framework 4.8 targeting pack, MSVC, and Rust stable (>=1.95).
 
-> [!NOTE]
-> The Snap package supports every type above **except Flatpak Steam**. For a Flatpak Steam install, use the AppImage or [AUR](https://aur.archlinux.org/packages/samrewritten-git) package.
+Run `build-remake.ps1` in a Developer PowerShell. The WPF frontend is in `desktop/Remake`. The Rust source at the repository root provides the headless engine. No submodule is required.
 
-If you would like to see your specific distribution supported, please open an issue.
+## Validation and status
 
-## CLI
+This is a development preview. Release builds and tests cover timestamps, unknown-date sorting, command arguments, cancellation/timeouts, WPF read-state cleanup, serial schedules and friend replay planning. Steam library reads were verified locally. Actual achievement/stat writes, friend access and idling still require live integration validation; automated tests do not modify Steam accounts.
 
-SamRewritten also functions as a command-line tool, as a separate binary that does not require GTK. It can list
-apps, achievements and stats as JSON, lock and unlock achievements individually or in bulk, edit stat values,
-import and export progress, and idle apps.
+## Attribution and license
 
-**➡️ [Read the CLI documentation](https://paulcombal.github.io/SamRewritten/cli.html)** for installation, a full
-command reference and scripting examples.
-
-When using a graphical version of SamRewritten, you can use `--auto-open=X` where `X` is an AppId, to open SamRewritten
-directly on the corresponding app's details page.
-
-## Environment variables
-
-SamRewritten's behavior can be altered via environment variables:
-* `SAM_STEAM_INSTALL_ROOT` (Linux only) override the detected Steam installation root path.
-* `SAM_STEAMCLIENT_PATH` (Linux only) override which `steamclient.so` file to load.
-* `SAM_GSCHEMA_DIR_FALLBACK` Fallback path for the `gschema.compiled` directory.
-* `SAM_APP_LIST_URL` which URL to download the app list from
-* `SAM_CACHE_DIR` (ignored under Snap) override the persistent cache directory.
-
-## End User Agreement
-
-This software is provided as a Proof-of-Concept. Users are solely responsible for any actions taken with this tool.
-By using SamRewritten, you acknowledge that you alone are responsible for the management of your Steam account. None of the contributors shall be held liable for any repercussions resulting from the use of this software.
-
-Using this tool in multiplayer games is highly discouraged.
+The frontend and combined distribution use **GPL-3.0-only**, see `LICENSE`. SamRewritten's source, author notices and license are preserved in this repository. Its inherited third-party attribution remains intact. The repository contains no separately copied original C# SAM project. Project naming does not imply affiliation with Valve or upstream maintainers.

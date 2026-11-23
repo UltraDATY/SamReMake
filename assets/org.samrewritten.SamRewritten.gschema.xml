@@ -88,7 +88,7 @@
         <key name="achievement-order" type="s">
             <default>'global-percentage'</default>
             <summary>Achievement Order</summary>
-            <description>How achievements are sorted. Valid values are 'steam-default', 'alphabetical', 'global-percentage', and 'unlock-date'.</description>
+            <description>How achievements are sorted. Valid values are 'steam-default', 'alphabetical', 'global-percentage', 'unlock-date' (newest first), and 'unlock-date-ascending' (oldest first).</description>
         </key>
 
         <key name="achievement-state" type="s">

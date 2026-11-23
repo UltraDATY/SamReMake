@@ -1324,3 +1324,12 @@ msgstr "点击暂存此成就；再次点击可移除。"
 #: src/gui_frontend/widgets/achievement_row.rs:295
 msgid "Already unlocked."
 msgstr "已解锁。"
+
+msgid "Unlock date (newest first)"
+msgstr "解锁时间（最新在前）"
+
+msgid "Unlock date (oldest first)"
+msgstr "解锁时间（最早在前）"
+
+msgid "Unlock time unknown (refresh to read Steam)"
+msgstr "解锁时间未知（刷新以读取 Steam）"

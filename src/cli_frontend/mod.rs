@@ -118,10 +118,17 @@ enum Command {
         /// New value, an integer or a decimal depending on the stat's type.
         value: String,
     },
+    /// List friends of the current Steam user.
+    ListFriends,
+    /// Read another user's recorded achievement timestamps without modifying them.
+    ListFriendAchievements { app_id: u32, steam_id64: String },
     /// Idle an app (appear in-game) until interrupted with Ctrl+C.
     Idle {
         /// Steam AppID of the game to idle.
         app_id: u32,
+        /// Exit cleanly when this local file appears (desktop frontend stop control).
+        #[arg(long)]
+        stop_file: Option<PathBuf>,
     },
     /// Export achievements and stats for one or more apps to stdout as JSON.
     Export {
@@ -270,19 +277,34 @@ fn run_command(command: Command) -> ExitCode {
             value,
         } => set_stat(app_id, stat_id, value),
 
-        Command::Idle { app_id } => {
+        Command::ListFriends => {
+            match (crate::backend::orchestrator_client::GetFriends).request() {
+                Ok(friends) => print_json(&friends),
+                Err(e) => { eprintln!("Failed to read friends: {e}"); ExitCode::FAILURE }
+            }
+        }
+        Command::ListFriendAchievements { app_id, steam_id64 } => {
+            match (crate::backend::orchestrator_client::GetFriendUnlockTimes { app_id, friend: steam_id64 }).request() {
+                Ok(timeline) => print_json(&timeline),
+                Err(e) => { eprintln!("Failed to read achievement timeline: {e}"); ExitCode::FAILURE }
+            }
+        }
+        Command::Idle { app_id, stop_file } => {
             if let Err(e) = (LaunchApp { app_id, idle: true }).request() {
                 eprintln!("Failed to connect to Steam: {e}");
                 return ExitCode::FAILURE;
             }
 
-            if let Err(e) = install_interrupt_handler() {
-                eprintln!("Failed to install interrupt handler: {}", e);
-                return ExitCode::FAILURE;
+            // Desktop clients use a stop file and may not have a console.
+            if stop_file.is_none() {
+                if let Err(e) = install_interrupt_handler() {
+                    eprintln!("Failed to install interrupt handler: {}", e);
+                    return ExitCode::FAILURE;
+                }
             }
 
             eprintln!("Idling app {}. Press Ctrl+C to stop.", app_id);
-            while !INTERRUPTED.load(Ordering::SeqCst) {
+            while !INTERRUPTED.load(Ordering::SeqCst) && !stop_file.as_ref().is_some_and(|path| path.exists()) {
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
             eprintln!("Stopping idle for app {}...", app_id);

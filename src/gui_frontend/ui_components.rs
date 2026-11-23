@@ -443,7 +443,8 @@ pub fn set_app_details_view_options(menu_model: &gtk::gio::Menu, achievements: b
                 (tr("Steam default"), "steam-default"),
                 (tr("Alphabetically"), "alphabetical"),
                 (tr("Global percentage"), "global-percentage"),
-                (tr("Unlock date"), "unlock-date"),
+                (tr("Unlock date (newest first)"), "unlock-date"),
+                (tr("Unlock date (oldest first)"), "unlock-date-ascending"),
             ],
         );
         append_target_submenu(

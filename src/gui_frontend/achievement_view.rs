@@ -41,6 +41,7 @@ enum AchievementOrder {
     #[default]
     GlobalPercentage,
     UnlockDate,
+    UnlockDateAscending,
 }
 
 impl AchievementOrder {
@@ -50,6 +51,7 @@ impl AchievementOrder {
             "alphabetical" => Some(Self::Alphabetical),
             "global-percentage" => Some(Self::GlobalPercentage),
             "unlock-date" => Some(Self::UnlockDate),
+            "unlock-date-ascending" => Some(Self::UnlockDateAscending),
             _ => None,
         }
     }
@@ -60,6 +62,7 @@ impl AchievementOrder {
             Self::Alphabetical => "alphabetical",
             Self::GlobalPercentage => "global-percentage",
             Self::UnlockDate => "unlock-date",
+            Self::UnlockDateAscending => "unlock-date-ascending",
         }
     }
 }
@@ -133,10 +136,28 @@ pub fn create_achievements_view(
                     .to_lowercase()
                     .cmp(&achievement2.name().to_lowercase())
                     .into(),
-                AchievementOrder::UnlockDate => achievement2
-                    .unlock_time_seconds()
-                    .cmp(&achievement1.unlock_time_seconds())
-                    .into(),
+                AchievementOrder::UnlockDate | AchievementOrder::UnlockDateAscending => {
+                    let a = if achievement1.is_achieved() {
+                        achievement1.unlock_time_seconds()
+                    } else {
+                        0
+                    };
+                    let b = if achievement2.is_achieved() {
+                        achievement2.unlock_time_seconds()
+                    } else {
+                        0
+                    };
+                    compare_unlock_times(
+                        a,
+                        b,
+                        matches!(
+                            achievement_order.get(),
+                            AchievementOrder::UnlockDateAscending
+                        ),
+                    )
+                    .then_with(|| achievement1.id().cmp(&achievement2.id()))
+                    .into()
+                }
                 AchievementOrder::GlobalPercentage => achievement2
                     .global_achieved_percent()
                     .partial_cmp(&achievement1.global_achieved_percent())
@@ -356,5 +377,36 @@ mod tests {
             Some(Some(true))
         );
         assert_eq!(achievement_state_from_action_target("unknown"), None);
+    }
+}
+
+// Zero represents a missing Steam timestamp, never the Unix epoch.
+fn compare_unlock_times(a: u64, b: u64, ascending: bool) -> Ordering {
+    match (a, b) {
+        (0, 0) => Ordering::Equal,
+        (0, _) => Ordering::Greater,
+        (_, 0) => Ordering::Less,
+        _ if ascending => a.cmp(&b),
+        _ => b.cmp(&a),
+    }
+}
+
+#[cfg(test)]
+mod unlock_time_tests {
+    use super::*;
+    #[test]
+    fn chronological_order_keeps_missing_times_last() {
+        for ascending in [true, false] {
+            let mut times = vec![0, 200, 100, 0, 200];
+            times.sort_by(|a, b| compare_unlock_times(*a, *b, ascending));
+            assert_eq!(
+                times,
+                if ascending {
+                    vec![100, 200, 200, 0, 0]
+                } else {
+                    vec![200, 200, 100, 0, 0]
+                }
+            );
+        }
     }
 }

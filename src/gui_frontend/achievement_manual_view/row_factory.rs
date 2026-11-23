@@ -157,13 +157,8 @@ pub(super) fn install_row_factory(
                             // store it, which is a failure like any other.
                             match result {
                                 Ok(true) => {
-                                    achievement_object.set_unlock_time_seconds(if unlocked {
-                                        std::time::SystemTime::now()
-                                            .duration_since(std::time::UNIX_EPOCH)
-                                            .map_or(0, |duration| duration.as_secs())
-                                    } else {
-                                        0
-                                    });
+                                    // Only Steam can supply the actual unlock time. Refresh to read it.
+                                    achievement_object.set_unlock_time_seconds(0);
                                     Batch::new(Op::ManualToggle, app_id_val, "").record(vec![
                                         Change::Achievement {
                                             id: achievement_object.id(),

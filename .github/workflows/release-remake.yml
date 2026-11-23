@@ -1,3 +1,33 @@
-Traceback (most recent call last):
-  File "<stdin>", line 2, in <module>
-UnicodeEncodeError: 'gbk' codec can't encode character '\ufeff' in position 0: illegal multibyte sequence
+name: Build and publish Windows release
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: microsoft/setup-msbuild@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build, test, package and publish
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          git rev-parse --verify "refs/tags/v$version" 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            $parts = $version.Split('.')
+            $version = "$($parts[0]).$($parts[1]).${{ github.run_number }}"
+          }
+          ./publish-release.ps1 -Version $version

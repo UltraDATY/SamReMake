@@ -1,4 +1,4 @@
-name: Build and publish Windows release
+﻿name: Build and publish Windows release
 on:
   push:
     branches: [master]
@@ -23,4 +23,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: ./publish-release.ps1 -Version "0.3.${{ github.run_number }}"
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          $previous = git show HEAD^:VERSION 2>$null
+          if ($LASTEXITCODE -eq 0 -and ($previous -join "").Trim() -eq $version) {
+            $parts = $version.Split('.')
+            $version = "$($parts[0]).$($parts[1]).${{ github.run_number }}"
+          }
+          ./publish-release.ps1 -Version $version

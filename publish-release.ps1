@@ -28,18 +28,21 @@ Automated tests do not write to Steam accounts.
     "$hash  $(Split-Path $zip -Leaf)" | Set-Content "$zip.sha256"
     $notes=Join-Path $assets 'release-notes.md'
     @"
-Windows portable development preview. Extract the complete ZIP and start SteamAchievementManager-Remake.exe.
+Windows portable release. Extract the complete ZIP and start SteamAchievementManager-Remake.exe.
+
+Changes: light interface with white panels, dark text and teal highlights; light title bar, menus and selection states.
 
 Source commit: $commit
 Includes the matching source archive, English/Chinese documentation and SHA-256 checksum.
 Build and automated tests passed. Live Steam account writes are not exercised by these tests.
 
-Windows 便携预览版：完整解压 ZIP 后运行 SteamAchievementManager-Remake.exe。
+Windows 便携正式版：完整解压 ZIP 后运行 SteamAchievementManager-Remake.exe。
+更新：白色面板、深色文字与青绿色高亮；统一浅色标题栏、菜单与选中状态。
 包含对应源码、中英文说明和 SHA-256 校验文件。构建及自动测试通过；自动测试不修改 Steam 账号。
 "@ | Set-Content $notes
     & gh release view $tag --json url 2>$null | Out-Null
     if($LASTEXITCODE -ne 0){
-        & gh release create $tag --target $commit --title "SamReMake $tag" --notes-file $notes --prerelease
+        & gh release create $tag --target $commit --title "SamReMake $tag" --notes-file $notes --latest
         if($LASTEXITCODE){throw 'Release creation failed'}
     }
     & gh release upload $tag $zip "$zip.sha256" --clobber

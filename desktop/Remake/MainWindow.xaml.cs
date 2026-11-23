@@ -1,4 +1,4 @@
-using static Remake.Localization;
+﻿using static Remake.Localization;
 // SPDX-License-Identifier: GPL-3.0-only
 // SteamAchievementManager-Remake: new Windows frontend by UltraDATY.
 using System;
@@ -97,7 +97,7 @@ namespace Remake {
   void ApplyTitleColors() {
    try {
     var handle=new System.Windows.Interop.WindowInteropHelper(this).Handle;
-    int dark=1,caption=0x221710,text=0xF7EDE6;
+    int dark=0,caption=0xFFFFFF,text=0x37291F;
     DwmSetWindowAttribute(handle,20,ref dark,4);
     DwmSetWindowAttribute(handle,35,ref caption,4);
     DwmSetWindowAttribute(handle,36,ref text,4);
@@ -172,7 +172,7 @@ namespace Remake {
   }
   void AddNavigationGroup(string title,int[] indexes,string[] labels){
    var group=new StackPanel{Margin=new Thickness(0,0,18,0)};
-   group.Children.Add(new TextBlock{Text=title,FontSize=10,Foreground=new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(159,176,200)),Margin=new Thickness(0,0,0,4)});
+   group.Children.Add(new TextBlock{Text=title,FontSize=10,Foreground=new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(82,99,121)),Margin=new Thickness(0,0,0,4)});
    var row=new StackPanel{Orientation=Orientation.Horizontal};group.Children.Add(row);
    for(int i=0;i<indexes.Length;i++){
     var button=new Button{Content=labels[i],Tag=indexes[i],Padding=new Thickness(12,6,12,6),Margin=new Thickness(0,0,5,0)};
@@ -180,7 +180,7 @@ namespace Remake {
    }
    NavigationPanel.Children.Add(group);
   }
-  void HighlightNavigation(){foreach(var button in navigationButtons){bool active=(int)button.Tag==Tabs.SelectedIndex;button.Background=new System.Windows.Media.SolidColorBrush(active?System.Windows.Media.Color.FromRgb(34,84,92):System.Windows.Media.Color.FromRgb(38,56,77));}}
+  void HighlightNavigation(){foreach(var button in navigationButtons){bool active=(int)button.Tag==Tabs.SelectedIndex;button.Background=new System.Windows.Media.SolidColorBrush(active?System.Windows.Media.Color.FromRgb(200,237,231):System.Windows.Media.Color.FromRgb(255,255,255));}}
   void NavigateContent(object sender,SelectionChangedEventArgs e){if(e.Source==Tabs)HighlightNavigation();}
   bool PrepareClose(){
    if(busy&&readCancellation==null){Status.Text=B("Wait for the active Steam write to finish.","请等待当前 Steam 写入完成。");return false;}

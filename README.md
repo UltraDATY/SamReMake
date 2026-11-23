@@ -1,10 +1,10 @@
-# SamReMake
+﻿# SamReMake
 
 **English** | [简体中文](README.zh-CN.md)
 
 A Windows desktop application for browsing and managing Steam achievements and statistics, based on [SamRewritten](https://github.com/PaulCombal/SamRewritten). It adds a native desktop workspace with searchable lists, real unlock-time sorting, single-game import/export and language settings.
 
-This is an independent development preview. It is not an official release of SamRewritten and is not affiliated with Valve.
+Version 1.0 introduces a light interface with white panels, slate text and teal highlights. This is an independent project. It is not an official release of SamRewritten and is not affiliated with Valve.
 
 ## Getting started
 
@@ -100,7 +100,7 @@ From a Developer PowerShell at the repository root:
 
 The portable output is written to `dist/SteamAchievementManager-Remake`. The WPF frontend lives in `desktop/Remake`; the Rust source at the repository root supplies the headless engine. No submodule is required.
 
-This remains a development preview. Builds and automated tests cover timestamps, sorting, command arguments, read cancellation/timeouts, language resources, UI read-state cleanup, the retained two-page navigation. Actual Steam achievement/statistic writes still require live integration validation; automated tests do not modify Steam accounts.
+Version 1.0 is the first numbered release with the light desktop interface. Builds and automated tests cover timestamps, sorting, command arguments, read cancellation/timeouts, language resources, UI read-state cleanup, the retained two-page navigation. Actual Steam achievement/statistic writes still require live integration validation; automated tests do not modify Steam accounts.
 
 ## Attribution and license
 
@@ -112,4 +112,4 @@ The frontend and combined distribution use **GPL-3.0-only**; see [LICENSE](LICEN
 
 Download a Windows portable ZIP from [GitHub Releases](https://github.com/UltraDATY/SamReMake/releases). Each release includes the complete executable package, its matching source archive, and a SHA-256 checksum. Historical releases are rebuilt from the exact commit stated in their release notes.
 
-Every push to `master` runs the Windows release workflow. After the build and automated tests pass, it publishes a development-preview release with a ZIP asset; documentation updates are included. A failed build or test does not publish a package. The release version is `0.3.<workflow run number>`. A maintainer can also run the workflow manually.
+Every push to `master` runs the Windows release workflow. After the build and automated tests pass, it publishes a release with a ZIP asset; documentation updates are included. A failed build or test does not publish a package. A changed `VERSION` file selects the exact release version; otherwise updates use `1.0.<workflow run number>`. A maintainer can also run the workflow manually.

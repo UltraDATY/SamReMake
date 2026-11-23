@@ -1,0 +1,145 @@
+// SPDX-License-Identifier: GPL-3.0-only
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows;
+namespace Remake {
+ public static class Localization {
+  public static string Language {get;private set;}="en";
+  static bool initialized;
+  public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SteamAchievementManager-Remake","language.txt");
+  static readonly Dictionary<string,string> English=new Dictionary<string,string> {
+   {"你的游戏 · 你的成就","Your games. Your achievements."},
+   {"搜索游戏 / AppID","Find a game / AppID"},
+   {"搜索游戏名称或 AppID","Search by game name or AppID"},
+   {"读取 Steam 游戏库","Load Steam library"},
+   {"手动输入 AppID","Enter AppID"},
+   {"也可以输入 AppID","Enter a Steam AppID"},
+   {"打开 AppID","Open AppID"},
+   {"成就工作台","Achievement workspace"},
+   {"从左侧选择游戏，或输入 AppID","Choose a game from your library or enter an AppID"},
+   {"真实时间来自 Steam · 未知时间始终置后","Times reported by Steam · Unknown times always last"},
+   {"成就","Achievements"},
+   {"搜索成就","Search achievements"},
+   {"搜索名称、说明或 API ID","Search name, description or API ID"},
+   {"全部状态","All states"},
+   {"已解锁","Unlocked"},
+   {"未解锁","Locked"},
+   {"解锁时间 ↓","Newest first"},
+   {"解锁时间 ↑","Oldest first"},
+   {"名称 A–Z","Name A–Z"},
+   {"全球比例 ↓","Global rate ↓"},
+   {"刷新 F5","Refresh F5"},
+   {"解锁选中","Unlock selected"},
+   {"重新锁定选中","Relock selected"},
+   {"导出进度","Export progress"},
+   {"导入进度","Import progress"},
+   {"说明","Description"},
+   {"状态","State"},
+   {"解锁时间（本地）","Unlocked at (local)"},
+   {"全球 %","Global %"},
+   {"统计编辑","Statistics"},
+   {"输入新的整数或小数","Enter a new integer or decimal value"},
+   {"写入选中统计","Save selected stat"},
+   {"受保护项不可写入","Protected stats cannot be edited"},
+   {"名称","Name"},
+   {"当前值","Value"},
+   {"权限","Access"},
+   {"取消读取","Cancel read"},
+   {"就绪 · 操作前显示变更预览","Ready · Changes are previewed before submission"},
+   {"Steam 读取进行中","Reading from Steam"},
+   {"设置","Settings"},
+   {"语言","Language"},
+   {"语言设置会自动保存，下次启动继续使用。","Your language preference is saved for the next launch."},
+   {"未知","Unknown"},
+   {"受保护","Protected"},
+   {"仅可增加","Increase only"},
+   {"可编辑","Editable"},
+   {"缺少 Steam 引擎，请使用完整便携包。","Steam engine not found. Use the complete portable package."},
+   {"Steam 读取超过 ","Steam read exceeded "},
+   {" 秒，已停止本次请求。请检查 Steam 连接后重试，或选择其他游戏。"," seconds. The request was stopped. Check Steam and retry, or select another game."},
+   {"Steam 请求失败：\n","Steam request failed:\n"},
+   {" · 已等待 "," · Waiting "},
+   {" 秒 · 接口未提供百分比"," seconds · No percentage is available from Steam"},
+   {"正在提交上一项变更，请稍候。","A previous change is still being submitted. Please wait."},
+   {"读取 Steam","Reading Steam"},
+   {"正在读取 Steam（每项最多 25 秒，可取消）…","Reading Steam (25 seconds per request; cancellable)…"},
+   {"正在提交变更，请勿重复操作…","Submitting changes. Please do not repeat the operation…"},
+   {"完成 · ","Done · "},
+   {"已取消读取，可以切换游戏或重新尝试读取。","Read cancelled. Select another game or retry."},
+   {"正在取消读取…","Cancelling read…"},
+   {"读取成就","Reading achievements"},
+   {"读取统计","Reading statistics"},
+   {"读取游戏库","Reading library"},
+   {"请输入有效的正整数 AppID。","Enter a valid positive AppID."},
+   {"正在读取成就（最多 25 秒，可取消）…","Reading achievements (up to 25 seconds; cancellable)…"},
+   {"成就已读取，正在读取统计（最多 25 秒，可取消）…","Achievements loaded. Reading statistics (up to 25 seconds; cancellable)…"},
+   {"请先取消读取或等待当前请求完成。","Cancel the read or wait for the current request to finish."},
+   {"请选中可修改且状态需要变化的成就（Ctrl / Shift 多选）。","Select editable achievements whose state needs to change (Ctrl / Shift for multiple selection)."},
+   {"变更预览","Preview changes"},
+   {"\n\n是否提交给 Steam？","\n\nSubmit to Steam?"},
+   {"部分条目被 Steam 拒绝，请刷新检查。","Steam rejected some items. Refresh to check their current state."},
+   {"该统计受保护。","This statistic is protected."},
+   {"请输入有效数字，小数请使用英文句点。","Enter a valid number. Use a period as the decimal separator."},
+   {"新值不符合该统计的范围或仅可增加限制。","The value violates the range or increase-only restriction."},
+   {"统计变更预览","Preview statistic change"},
+   {"导入预览","Preview import"},
+  };
+  static readonly Dictionary<string,string> Resources=new Dictionary<string,string> {
+   {"loc_0","你的游戏 · 你的成就"},
+   {"loc_1","搜索游戏 / AppID"},
+   {"loc_2","搜索游戏名称或 AppID"},
+   {"loc_3","读取 Steam 游戏库"},
+   {"loc_4","手动输入 AppID"},
+   {"loc_5","也可以输入 AppID"},
+   {"loc_6","打开 AppID"},
+   {"loc_10","成就工作台"},
+   {"loc_11","从左侧选择游戏，或输入 AppID"},
+   {"loc_12","真实时间来自 Steam · 未知时间始终置后"},
+   {"loc_13","成就"},
+   {"loc_14","搜索成就"},
+   {"loc_15","搜索名称、说明或 API ID"},
+   {"loc_16","全部状态"},
+   {"loc_17","已解锁"},
+   {"loc_18","未解锁"},
+   {"loc_19","解锁时间 ↓"},
+   {"loc_20","解锁时间 ↑"},
+   {"loc_21","名称 A–Z"},
+   {"loc_22","全球比例 ↓"},
+   {"loc_23","刷新 F5"},
+   {"loc_24","解锁选中"},
+   {"loc_25","重新锁定选中"},
+   {"loc_26","导出进度"},
+   {"loc_27","导入进度"},
+   {"loc_29","说明"},
+   {"loc_30","状态"},
+   {"loc_31","解锁时间（本地）"},
+   {"loc_32","全球 %"},
+   {"loc_33","统计编辑"},
+   {"loc_34","输入新的整数或小数"},
+   {"loc_35","写入选中统计"},
+   {"loc_36","受保护项不可写入"},
+   {"loc_37","名称"},
+   {"loc_38","当前值"},
+   {"loc_39","权限"},
+   {"loc_47","设置"},
+   {"loc_48","语言"},
+   {"loc_49","语言设置会自动保存，下次启动继续使用。"},
+   {"loc_50","取消读取"},
+   {"loc_51","就绪 · 操作前显示变更预览"},
+   {"loc_52","Steam 读取进行中"},
+  };
+  public static string L(string text) => Language=="zh-CN"?text:English.TryGetValue(text,out var value)?value:text;
+  public static void Initialize() {
+   if(initialized)return;initialized=true;
+   try {if(File.Exists(SettingsPath)&&File.ReadAllText(SettingsPath).Trim()=="zh-CN")Language="zh-CN";}catch(IOException){}catch(UnauthorizedAccessException){}
+   Apply();
+  }
+  public static void SetLanguage(string language,bool persist=true) {
+   if(language!="en"&&language!="zh-CN")throw new ArgumentException("Unsupported language");
+   if(persist){Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath));File.WriteAllText(SettingsPath,language);}
+   Language=language;Apply();
+  }
+  static void Apply() {if(Application.Current!=null)foreach(var entry in Resources)Application.Current.Resources[entry.Key]=L(entry.Value);}
+ }
+}

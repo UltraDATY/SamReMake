@@ -1,0 +1,268 @@
+name: build-publish-all
+run-name: Build and publish artifacts
+on: [workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Install NSIS
+        run: |
+          Invoke-WebRequest https://ozone3d.net/dl/dlz/nsis-3.11-setup.exe -OutFile C:\WINDOWS\Temp\nsis-3.11-setup.exe
+          Invoke-Expression "& C:\WINDOWS\Temp\nsis-3.11-setup.exe /S"
+
+      - name: Print NSIS version
+        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" -VERSION"
+
+      - name: Install gettext
+        run: choco install gettext --no-progress -y
+
+      - name: Download GTK Dependencies Zip
+        run: |
+          $zipUrl = "https://github.com/wingtk/gvsbuild/releases/download/2025.5.0/GTK4_Gvsbuild_2025.5.0_x64.zip"
+          $downloadPath = "C:\temp\gtk_dependencies.zip"
+          $extractPath = "C:\gtk"
+          
+          Write-Host "Ensuring C:\temp directory exists..."
+          New-Item -ItemType Directory -Force -Path "C:\temp"
+          
+          Write-Host "Downloading GTK dependencies from $zipUrl to $downloadPath..."
+          Invoke-WebRequest -Uri $zipUrl -OutFile $downloadPath
+          
+          Write-Host "Ensuring extraction directory $extractPath exists..."
+          New-Item -ItemType Directory -Force -Path $extractPath
+          
+          Write-Host "Extracting $downloadPath to $extractPath..."
+          Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
+          
+          Write-Host "Cleaning up temporary zip file..."
+          Remove-Item -Path $downloadPath -Force
+          
+          Write-Host "GTK dependencies downloaded and extracted successfully to C:\gtk!"
+
+      - name: Configure environment
+        run: |
+          echo "PATH=C:\gtk\bin;$env:CARGO_HOME\bin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LIB=C:\gtk\lib;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "INCLUDE=C:\gtk\include;C:\gtk\include\cairo;C:\gtk\include\glib-2.0;C:\gtk\include\gobject-introspection-1.0;C:\gtk\lib\glib-2.0\include;$env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Build GTK-RS application (release)
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Create release archive
+        run: |
+          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
+          New-Item -ItemType Directory -Path "$ARCHIVE_NAME"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/"
+          
+          $originalBinFolder = "C:\gtk\bin"
+          $originalLibFolder = "C:\gtk\lib"
+          $originalShareIconsFolder = "C:\gtk\share\icons"
+          
+          $tempArchiveRoot = "./$ARCHIVE_NAME"
+          $tempBinFolder = "./$ARCHIVE_NAME/bin"
+          $tempShareFolder = "./$ARCHIVE_NAME/share"
+          $tempSchemaFolder = "./$ARCHIVE_NAME/share/glib-2.0/schemas"
+          
+          New-Item -ItemType Directory -Path $tempBinFolder
+          New-Item -ItemType Directory -Path $tempShareFolder
+          New-Item -ItemType Directory -Path $tempSchemaFolder -Force
+          
+          Get-ChildItem -Path $originalBinFolder -Filter "*.dll" -File | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $tempBinFolder -Force
+            Write-Host "Copied: $($_.Name) to $tempBinFolder"
+          }
+          
+          Copy-Item -Path C:\gtk\bin\gdbus.exe -Destination $tempBinFolder -Force
+          Copy-Item -Path C:\gtk\bin\gtk4-update-icon-cache.exe -Destination $tempBinFolder -Force
+          
+          Copy-Item -Path "$originalShareIconsFolder" -Destination $tempShareFolder -Recurse -Force
+          Write-Host "Copied icons to $tempShareFolder"
+
+          # Translations compiled by build.rs (locale/<lang>/LC_MESSAGES/*.mo)
+          if (Test-Path "locale") {
+            Copy-Item -Path "locale" -Destination "$tempShareFolder/locale" -Recurse -Force
+            Write-Host "Copied translations to $tempShareFolder/locale"
+          }
+          
+          # If something breaks after an gvsbuild update, maybe we need to pull more from here
+          $tempLibFolder = "$tempArchiveRoot/lib"
+          New-Item -ItemType Directory -Path $tempLibFolder -Force | Out-Null
+          Copy-Item -Path "$originalLibFolder\gdk-pixbuf-2.0" -Destination $tempLibFolder -Recurse -Force
+          Write-Host "Copied lib/gdk-pixbuf-2.0 to $tempLibFolder"
+          
+          $originalSchemaFolder = "C:\gtk\share\glib-2.0\schemas"
+          Copy-Item -Path "$originalSchemaFolder\*.gschema.xml" -Destination $tempSchemaFolder -Force
+          Copy-Item -Path "assets/org.samrewritten.SamRewritten.gschema.xml" -Destination $tempSchemaFolder -Force
+          & "C:\gtk\bin\glib-compile-schemas.exe" $tempSchemaFolder
+          Write-Host "Compiled merged GSettings schemas into $tempSchemaFolder"
+        shell: pwsh
+
+      - name: Build GTK-RS application (Adwaita)
+        run: cargo build --release --features adwaita --target x86_64-pc-windows-msvc
+
+      - name: Move Adwaita executable to release archive
+        run: |
+          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-adw.exe"
+        shell: pwsh
+
+      - name: Build GTK-RS application (CLI)
+        run: cargo build --release --no-default-features --features cli --target x86_64-pc-windows-msvc
+
+      - name: Move CLI executable to release archive
+        run: |
+          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-cli.exe"
+        shell: pwsh
+
+      - name: Create portable zip
+        run: |
+          $STAGE_ROOT = "_portable"
+          $STAGE = "$STAGE_ROOT/SamRewritten-windows-x86_64"
+          New-Item -ItemType Directory -Path $STAGE_ROOT -Force | Out-Null
+          Copy-Item SamRewritten-windows-x86_64 $STAGE -Recurse -Force
+          Move-Item "$STAGE/bin/*" $STAGE -Force
+          Remove-Item "$STAGE/bin" -Recurse -Force
+          Compress-Archive -Path $STAGE -DestinationPath SamRewritten-windows-x86_64.zip -Force
+        shell: pwsh
+
+      - name: Make installer
+        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" package/windows_installer.nsi"
+
+      - name: Stage installer for upload
+        run: Move-Item package/SamRewritten-installer.exe SamRewritten-installer.exe -Force
+        shell: pwsh
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-artifact
+          path: |
+            SamRewritten-installer.exe
+            SamRewritten-windows-x86_64.zip
+          retention-days: 1
+
+  build_appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build Docker builder
+        run: docker build -t samrewritten-builder -f package/appimage.Dockerfile .
+
+      - name: Build GTK AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage"
+
+      - name: Add permissions
+        run: sudo chmod 777 target/appimage
+
+      - name: Rename GTK AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-gtk.AppImage
+
+      - name: Build Adwaita AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --features adwaita"
+
+      - name: Rename Adwaita AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-adw.AppImage
+
+      - name: Build CLI AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --no-default-features --features cli"
+
+      - name: Rename CLI AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-cli.AppImage
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-artifact
+          path: target/appimage
+          retention-days: 1
+
+  build_snap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: samrewritten-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
+          retention-days: 7
+
+      - name: Publish to Snap Store (candidate)
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: candidate
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [ build_windows, build_appimage ] # This job depends on both build jobs
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-artifact
+          path: ./release_artifacts/windows
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: linux-artifact
+          path: ./release_artifacts/linux
+
+      - name: List artifacts
+        run: |
+          ls -la ./release_artifacts
+          ls -la ./release_artifacts/linux
+          ls -la ./release_artifacts/windows
+
+      - name: Create Release
+        id: create_release # Assign an ID to this step to access its outputs
+        uses: softprops/action-gh-release@v3
+        with:
+          # The tag name for the release. github.ref_name automatically extracts the tag name (e.g., v1.0.0 from refs/tags/v1.0.0)
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          # The release body (notes). You can specify a string or use a file (body_path).
+          # For auto-generating release notes based on PRs, you might use other actions like 'release-drafter'.
+          body: |
+            ## Release Notes for ${{ github.ref_name }}
+
+            This release includes:
+            - Latest features and bug fixes.
+            - Built on ${{ github.sha }}
+
+          draft: true
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            release_artifacts/windows/SamRewritten-installer.exe
+            release_artifacts/windows/SamRewritten-windows-x86_64.zip
+            release_artifacts/linux/samrewritten-gtk.AppImage
+            release_artifacts/linux/samrewritten-adw.AppImage
+            release_artifacts/linux/samrewritten-cli.AppImage
+
+      - name: Reminder - promote snap to stable after review
+        run: |
+          echo "The snap was published to the 'candidate' channel."
+          echo "Once you've reviewed this release, promote it to stable with:"
+          echo "  snapcraft promote samrewritten --from-channel candidate --to-channel stable"

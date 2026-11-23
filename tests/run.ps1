@@ -23,4 +23,8 @@ if($LASTEXITCODE){throw 'UI test build failed'}
 Copy-Item "$testRoot\FrontendTest.exe.config" "$testRoot\UiReadTest.exe.config" -Force
 & "$testRoot\UiReadTest.exe"
 if($LASTEXITCODE){throw 'UI tests failed'}
-
+& $compiler /nologo /codepage:65001 "/r:$testRoot\SteamAchievementManager-Remake.exe" "/r:$referenceRoot\PresentationFramework.dll" "/r:$referenceRoot\PresentationCore.dll" "/r:$referenceRoot\WindowsBase.dll" /r:System.Xaml.dll "/out:$testRoot\NavigationTest.exe" "$PSScriptRoot\NavigationTest.cs"
+if($LASTEXITCODE){throw 'Navigation test build failed'}
+Copy-Item "$testRoot\FrontendTest.exe.config" "$testRoot\NavigationTest.exe.config" -Force
+& "$testRoot\NavigationTest.exe"
+if($LASTEXITCODE){throw 'Navigation tests failed'}

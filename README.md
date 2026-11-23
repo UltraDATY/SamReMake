@@ -11,7 +11,7 @@ This is an independent development preview. It is not an official release of Sam
 1. Start the Steam desktop client and sign in to the account you want to use.
 2. Extract the **complete portable package**, keeping its `engine` folder beside `SteamAchievementManager-Remake.exe`.
 3. Run `SteamAchievementManager-Remake.exe` and click **Load Steam library**, or enter an AppID and click **Open AppID**.
-4. Choose a game. Use **Achievements**, **Statistics** or **Schedule** for that game, or open **Advanced workspace** from the sidebar.
+4. Choose a game. Open any feature directly from the top toolbar, grouped as **Game progress**, **Automation** and **Data management**.
 
 The interface starts in English unless you have already saved another language. Use **Settings → Language** in the **top-left toolbar** to switch between English and Simplified Chinese.
 
@@ -85,9 +85,9 @@ The queue waits before the first item and between subsequent items, submitting o
 
 **Stop pending tasks** cancels future queue items. A request already being submitted may still finish. A failure stops subsequent items. Keep the app open: queues are not resumed or caught up automatically after closing. Stop the queue before switching games or refreshing.
 
-## Advanced workspace
+## Automation and data tools
 
-The sidebar opens an additional window **inside Remake**, not the SamRewritten graphical application. Steam communication is handled by a bundled background engine.
+All tools are direct pages in the main window—there is no advanced-workspace submenu or extra window. **Game progress** contains Achievements and Statistics; **Automation** contains Schedule, Friend replay and Idle; **Data management** contains Batch operations and History / restore. Steam communication uses the bundled background engine.
 
 ### Batch operations across games
 
@@ -104,7 +104,7 @@ Writes are confirmed and snapshots are saved first. Operations across games are 
 
 ### Friend timelines and relative-time replay
 
-Select the target game in the main workspace before opening **Friend timeline**.
+Select the target game in the sidebar, then choose **Automation → Friend replay** in the top toolbar. Both are direct navigation buttons, not nested menus.
 
 1. Click **Load friends** and select a friend, or enter a SteamID64 directly.
 2. Set a replay duration of **1–10080 minutes**.
@@ -119,11 +119,11 @@ The first eligible item has no initial delay. Equal source times have no gap; a 
 
 **Idle → Start idling** keeps the current AppID connected as in-game without starting the game's executable. It does not unlock achievements by itself.
 
-Use **Stop idling** to request a clean shutdown. Closing the advanced workspace also requests idle shutdown; wait for cleanup if Steam is slow to respond. Do not rely on graceful cleanup after forcibly terminating the process or shutting down Windows.
+Use **Stop idling** to request a clean shutdown. Closing the application also requests idle shutdown; wait for cleanup if Steam is slow to respond. Do not rely on graceful cleanup after forcibly terminating the process or shutting down Windows.
 
 ### History, snapshots and restoration
 
-**History and restore** lists snapshots saved before progress-changing operations. Each entry identifies its time, AppID and reason.
+**Data management → History / restore** lists snapshots saved before progress-changing operations. Each entry identifies its time, AppID and reason.
 
 Select an entry and choose **Restore selected snapshot** to import that game's earlier achievement states and statistic values. Restoration requires confirmation and first saves another snapshot of the current state. If a required backup fails, the associated write is not submitted.
 
@@ -131,7 +131,7 @@ Snapshots cannot restore the original achievement unlock timestamps. Entries cre
 
 ## Settings and local files
 
-**Settings → Language** changes the UI between English and Simplified Chinese and remembers your selection. Reopen the advanced workspace after changing language to refresh its labels.
+**Settings → Language** changes the UI between English and Simplified Chinese and remembers your selection. The navigation and tool labels update without resetting page input or active sessions.
 
 User files are stored under:
 
